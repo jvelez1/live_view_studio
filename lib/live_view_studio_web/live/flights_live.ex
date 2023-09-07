@@ -2,12 +2,14 @@ defmodule LiveViewStudioWeb.FlightsLive do
   use LiveViewStudioWeb, :live_view
 
   alias LiveViewStudio.Flights
+  alias LiveViewStudio.Airports
 
   def mount(_params, _session, socket) do
     socket =
       assign(socket,
         airport: "",
         flights: [],
+        matches: %{},
         loading: false
       )
 
@@ -15,10 +17,11 @@ defmodule LiveViewStudioWeb.FlightsLive do
   end
 
   def render(assigns) do
+    # phx-debounce: is for having sort of delay on filtering airports suggestions
     ~H"""
     <h1>Find a Flight</h1>
     <div id="flights">
-      <form phx-submit="search">
+      <form phx-submit="search" phx-change="suggest">
         <input
           type="text"
           name="airport"
@@ -27,12 +30,20 @@ defmodule LiveViewStudioWeb.FlightsLive do
           autofocus
           autocomplete="off"
           readonly={@loading}
+          list="matches"
+          phx-debounce="1000"
         />
 
         <button>
           <img src="/images/search.svg" />
         </button>
       </form>
+
+      <datalist id="matches">
+        <option :for={{code, name} <- @matches} value={code}>
+          <%= name %>
+        </option>
+      </datalist>
 
       <div :if={@loading} class="loader">Loading...</div>
 
@@ -74,6 +85,11 @@ defmodule LiveViewStudioWeb.FlightsLive do
       )
 
     {:noreply, socket}
+  end
+
+  def handle_event("suggest", %{"airport" => airport}, socket) do
+    matches = Airports.suggest(airport)
+    {:noreply, assign(socket, matches: matches)}
   end
 
   def handle_info({:run_search, airport}, socket) do
