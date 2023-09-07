@@ -27,52 +27,72 @@ defmodule LiveViewStudioWeb.BoatsLive do
     </CustomComponents.promo>
 
     <div id="boats">
-      <form phx-change="filter">
-        <div class="filters">
-          <select name="type">
-            <%= Phoenix.HTML.Form.options_for_select(
-              type_options(),
-              @filter.type
-            ) %>
-          </select>
-          <div class="prices">
-            <%= for price <- ["$", "$$", "$$$"] do %>
-              <input
-                type="checkbox"
-                name="prices[]"
-                value={price}
-                id={price}
-                checked={price in @filter.prices}
-              />
-              <label for={price}><%= price %></label>
-            <% end %>
-            <input type="hidden" name="prices[]" value="" />
-          </div>
-        </div>
-      </form>
+      <.filter_form filter={@filter} />
       <div class="boats">
-        <div :for={boat <- @boats} class="boat">
-          <img src={boat.image} />
-          <div class="content">
-            <div class="model">
-              <%= boat.model %>
-            </div>
-            <div class="details">
-              <span class="price">
-                <%= boat.price %>
-              </span>
-              <span class="type">
-                <%= boat.type %>
-              </span>
-            </div>
-          </div>
-        </div>
+        <.boat :for={boat <- @boats} boat={boat} />
       </div>
     </div>
 
     <CustomComponents.promo>
       Hurry, only 3 boats left!
     </CustomComponents.promo>
+    """
+  end
+
+  # If we are using local components, we can avoid defining the assigns
+  # If we extract the function components to be reusable from different live views
+  # we must define the assigns
+
+  attr :filter, :map, required: true
+
+  def filter_form(assigns) do
+    ~H"""
+    <form phx-change="filter">
+      <div class="filters">
+        <select name="type">
+          <%= Phoenix.HTML.Form.options_for_select(
+            type_options(),
+            @filter.type
+          ) %>
+        </select>
+        <div class="prices">
+          <%= for price <- ["$", "$$", "$$$"] do %>
+            <input
+              type="checkbox"
+              name="prices[]"
+              value={price}
+              id={price}
+              checked={price in @filter.prices}
+            />
+            <label for={price}><%= price %></label>
+          <% end %>
+          <input type="hidden" name="prices[]" value="" />
+        </div>
+      </div>
+    </form>
+    """
+  end
+
+  attr :boat, LiveViewStudio.Boats.Boat, required: true
+
+  def boat(assigns) do
+    ~H"""
+    <div class="boat">
+      <img src={@boat.image} />
+      <div class="content">
+        <div class="model">
+          <%= @boat.model %>
+        </div>
+        <div class="details">
+          <span class="price">
+            <%= @boat.price %>
+          </span>
+          <span class="type">
+            <%= @boat.type %>
+          </span>
+        </div>
+      </div>
+    </div>
     """
   end
 
