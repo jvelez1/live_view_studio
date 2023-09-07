@@ -2,6 +2,7 @@ defmodule LiveViewStudioWeb.BoatsLive do
   use LiveViewStudioWeb, :live_view
 
   alias LiveViewStudio.Boats
+  alias LiveViewStudioWeb.CustomComponents
 
   # Using temporary_assigns in this LiveView would greatly minimize memory usage on the server.
   def mount(_params, _session, socket) do
@@ -18,12 +19,12 @@ defmodule LiveViewStudioWeb.BoatsLive do
     ~H"""
     <h1>Daily Boat Rentals</h1>
 
-    <.promo expiration={2}>
+    <CustomComponents.promo expiration={2}>
       save 25% on rentals!
       <:legal>
         <Heroicons.exclamation_circle /> Limit 1 per party
       </:legal>
-    </.promo>
+    </CustomComponents.promo>
 
     <div id="boats">
       <form phx-change="filter">
@@ -69,12 +70,9 @@ defmodule LiveViewStudioWeb.BoatsLive do
       </div>
     </div>
 
-    <.promo expiration={1}>
+    <CustomComponents.promo>
       Hurry, only 3 boats left!
-      <:legal>
-        Excluding weekends
-      </:legal>
-    </.promo>
+    </CustomComponents.promo>
     """
   end
 
@@ -93,22 +91,5 @@ defmodule LiveViewStudioWeb.BoatsLive do
       Sporting: "sporting",
       Sailing: "sailing"
     ]
-  end
-
-  defp promo(assigns) do
-    ~H"""
-    <div class="promo">
-      <div class="deal">
-        <%= render_slot(@inner_block) %>
-      </div>
-
-      <dev class="expiration">
-        Deal Expires in <%= @expiration %> hours
-      </dev>
-      <dev class="legal">
-        <%= render_slot(@legal) %>
-      </dev>
-    </div>
-    """
   end
 end
