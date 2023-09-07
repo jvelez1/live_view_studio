@@ -3,6 +3,7 @@ defmodule LiveViewStudioWeb.BoatsLive do
 
   alias LiveViewStudio.Boats
 
+  # Using temporary_assigns in this LiveView would greatly minimize memory usage on the server.
   def mount(_params, _session, socket) do
     socket =
       assign(socket,
@@ -10,14 +11,14 @@ defmodule LiveViewStudioWeb.BoatsLive do
         boats: Boats.list_boats()
       )
 
-    {:ok, socket}
+    {:ok, socket, temporary_assigns: [boats: []]}
   end
 
   def render(assigns) do
     ~H"""
     <h1>Daily Boat Rentals</h1>
     <div id="boats">
-      <form>
+      <form phx-change="filter">
         <div class="filters">
           <select name="type">
             <%= Phoenix.HTML.Form.options_for_select(
@@ -60,6 +61,14 @@ defmodule LiveViewStudioWeb.BoatsLive do
       </div>
     </div>
     """
+  end
+
+  def handle_event("filter", %{"type" => type, "prices" => prices}, socket) do
+    filters = %{type: type, prices: prices}
+    boats = Boats.list_boats(filters)
+
+    socket = assign(socket, boats: boats, filter: filters)
+    {:noreply, socket}
   end
 
   defp type_options do
